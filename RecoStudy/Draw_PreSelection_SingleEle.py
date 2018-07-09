@@ -10,7 +10,7 @@ from Step5_TT_W_ScaleFactor_Ele import *
 #InputFilesLocation='NewOutFiles_CodexAnalyzer_Preselection_SingleEle_MLQ_1100_1400/'
 #InputFilesLocation='NewOutFiles_CodexAnalyzer_Preselection_SingleEle_MLQ_1100_1400_METLess200/'
 #InputFilesLocation='NewOutFiles_CodexAnalyzer_Preselection_SingleEle_Lplus/'
-InputFilesLocation='NewOutFiles_CodexAnalyzer_Preselection_SingleEle_Lminus/'
+InputFilesLocation='Step6_Electron/'
 #................................................................................................................................
 #................................................................................................................................
 
@@ -82,26 +82,30 @@ def MakePlot(FileName,categoriy,HistName,Xaxis,Info,RB_,channel,yMin,isLOG,ttbar
 
     Data=file.Get(categoriy).Get("data_obs")
     Data.Rebin(RB_)
-    
+
 #    QCD=file.Get(categoriy).Get("QCD")
 #    QCD.Rebin(RB_)
 
+    TT=file.Get(categoriy).Get("TT")
+    TT.Rebin(RB_)
+    TTScale = returnSF_TT(InputFilesLocation+FileName, RB_)
+    TT.Scale(TTScale)
+    # TT.Scale(1)
+    # if ttbarCR=="" :  TT.Scale(SF_TT_SingleLep())
+    # if ttbarCR=="_ttbarCRSingleLep" :  TT.Scale(SF_TT_SingleLep())
+    # if ttbarCR=="_ttbarCRDiLep" :  TT.Scale(SF_TT_DiLep())
 
     W=file.Get(categoriy).Get("W")
     W.Rebin(RB_)
-    W.Scale(1)
-#    if ttbarCR=="" :  W.Scale(SF_W_SingleLep())
-#    if ttbarCR=="_ttbarCRSingleLep" :  W.Scale(SF_W_SingleLep())
-#    if ttbarCR=="_ttbarCRDiLep" :  W.Scale(SF_W_DiLep())
+    WScale = returnSF_W(InputFilesLocation+FileName, TTScale, RB_)
+    # W.Scale(returnSF_W(InputFilesLocation+FileName, returnSF_TT(InputFilesLocation+FileName)))
+    # W.Scale(1)
+    # if ttbarCR=="" :  W.Scale(SF_W_SingleLep())
+    # if ttbarCR=="_ttbarCRSingleLep" :  W.Scale(SF_W_SingleLep())
+    # if ttbarCR=="_ttbarCRDiLep" :  W.Scale(SF_W_DiLep())
 
 
 
-    TT=file.Get(categoriy).Get("TT")
-    TT.Rebin(RB_)
-    TT.Scale(1)
-#    if ttbarCR=="" :  TT.Scale(SF_TT_SingleLep())
-#    if ttbarCR=="_ttbarCRSingleLep" :  TT.Scale(SF_TT_SingleLep())
-#    if ttbarCR=="_ttbarCRDiLep" :  TT.Scale(SF_TT_DiLep())
 
     SingleT=file.Get(categoriy).Get("SingleTop")
 
@@ -145,9 +149,9 @@ def MakePlot(FileName,categoriy,HistName,Xaxis,Info,RB_,channel,yMin,isLOG,ttbar
     SingleT.SetFillColor(ROOT.TColor.GetColor(150, 132, 232))
     VV.SetFillColor(ROOT.TColor.GetColor(200, 282, 232))
     DYS.SetFillColor(ROOT.TColor.GetColor(108, 226, 354))
-    
-    
-    
+
+
+
 #    ######  Add OverFlow Bin
 #    if not FileName.find("_tmass_MuMet") > 0:
 #        QCD.SetBinContent(QCD.GetNbinsX(),QCD.GetBinContent(QCD.GetNbinsX()+1)+QCD.GetBinContent(QCD.GetNbinsX()))
@@ -266,7 +270,10 @@ def MakePlot(FileName,categoriy,HistName,Xaxis,Info,RB_,channel,yMin,isLOG,ttbar
 
     pad1.RedrawAxis()
 
+    #Abdollah Version Commented Out
+    # categ  = ROOT.TPaveText(0.18, 0.5+0.013, 0.43, 0.70+0.155, "NDC")
     categ  = ROOT.TPaveText(0.22, 0.5+0.013, 0.45, 0.60+0.1, "NDC")
+
     categ.SetBorderSize(   0 )
     categ.SetFillStyle(    0 )
     categ.SetTextAlign(   12 )
@@ -274,12 +281,12 @@ def MakePlot(FileName,categoriy,HistName,Xaxis,Info,RB_,channel,yMin,isLOG,ttbar
     categ.SetTextColor(    1 )
 #    categ.SetTextFont (   41 )
     #       if i==1 or i==3:
-    categ.AddText("electron channel")
+    # categ.AddText("electron channel")
     if MTLegend=='_HighMT': categ.AddText("M_{T}(e,Met) > 100 GeV")
     if MTLegend=='_MT500': categ.AddText("M_{T}(e,Met) > 500 GeV")
 #    categ.AddText("1100<M_{LQ}<1400 GeV")
 #    categ.AddText("MET < 200 GeV")
-    categ.AddText('q_{e} < 0')
+    # categ.AddText('q_{e} < 0')
     categ.Draw()
 
     c.cd()
@@ -295,22 +302,22 @@ def MakePlot(FileName,categoriy,HistName,Xaxis,Info,RB_,channel,yMin,isLOG,ttbar
     pad2.SetGridy()
     pad2.Draw()
     pad2.cd()
-    
+
     h1=errorBand.Clone()
     h1.SetMaximum(3)
     h1.SetMinimum(0.01)
     h1.SetMarkerStyle(20)
 
     h3=Data.Clone()
-    
+
     h3.Sumw2()
     h1.Sumw2()
-    
-    
+
+
     h1.SetStats(0)
     h3.SetStats(0)
     h1.SetTitle("")
-    
+
     h1.Divide(errorBand)
     #######  set the bin errors to zero befive divinig data to that
     errorBandZeroErr=errorBand.Clone()
@@ -334,7 +341,7 @@ def MakePlot(FileName,categoriy,HistName,Xaxis,Info,RB_,channel,yMin,isLOG,ttbar
     h1.GetYaxis().SetLabelSize(0.11)
     h1.GetXaxis().SetTitleFont(42)
     h1.GetYaxis().SetTitleFont(42)
-    
+
     h1.Draw("e2")
     h3.Draw("E0psame")
 
@@ -345,6 +352,7 @@ def MakePlot(FileName,categoriy,HistName,Xaxis,Info,RB_,channel,yMin,isLOG,ttbar
 
     c.Modified()
     c.SaveAs(InputFilesLocation+'_EleJet'+FileName.replace('ROOT_PreSelection_SingleEleEleJet','').replace('_HighMT','_MT100').replace('.root','').replace('_HighDPhi_Iso','')+".pdf")
+    c.SaveAs(InputFilesLocation+'_EleJet'+FileName.replace('ROOT_PreSelection_SingleEleEleJet','').replace('_HighMT','_MT100').replace('.root','').replace('_HighDPhi_Iso','')+".png")
 
 
 
@@ -377,13 +385,14 @@ FileNamesInfo=[
 #    Isolation=["_Iso", "_AntiIso","_Total"]
 
 Isolation=["_Iso"]
-MT=["_HighMT","_MT500"]
+MT=["_NoMT"]
+JPT=[ "_HighDPhi"]
+# MT=["_HighMT","_MT500"]
 #MT= ["_NoMT","_HighMT","_MT50To150","_MT100","_MT150","_MT200","_MT300","_MT400","_MT500"]
 #MT= ["_MT100","_MT150"]
 #MT_legend= [" 50 < M_{T} < 100","100 < M_{T} < 150"]
 #MT= ["_NoMT","_HighMT"]
 #    JPT=["_LowDPhi", "_HighDPhi"];
-JPT=[ "_HighDPhi"]
 
 #lqEta= ["_Barrel", "_Endcap","_TotEta"]
 lqEta= [""]
@@ -396,20 +405,20 @@ logStat=[1]
 
 
 for i in range(0,len(FileNamesInfo)):
-    
+
     NormMC=FileNamesInfo[i][0]
     axisName=FileNamesInfo[i][1]
     nothing=FileNamesInfo[i][2]
     Bin=FileNamesInfo[i][3]
     yMin=FileNamesInfo[i][4]
-    
+
     for iso in Isolation:
         for mt in MT:
             for jpt in JPT:
                 for etalq in lqEta:
                     for reg in region:
                         for isLOG in logStat:
-                    
+
 #                            FileName="ROOT_PreSelection_SingleEle"+"EleJet"+NormMC+mt+jpt+etalq+reg+iso+".root"
                             FileName="ROOT_PreSelection_SingleEleEleJet"+NormMC+mt+jpt+etalq+reg+iso+".root"
                             Info=NormMC+mt+jpt+etalq+reg+iso
